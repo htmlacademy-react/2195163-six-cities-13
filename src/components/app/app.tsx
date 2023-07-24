@@ -1,33 +1,54 @@
-import MainScreen from '../../pages/main-screen/main-screen';
-import LoginScreen from '../../pages/login-screen/login-screen';
-import FavoritesScreen from '../../pages/favorites-screen/favorites-screen';
-import OfferScreen from '../../pages/offer-screen/offer-screen';
-import PageNotFoundScreen from '../../pages/page-not-found-screen/page-not-found-screen';
+import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import Favorites from '../../pages/favorites/favorites';
+import Login from '../../pages/login/login';
+import NotFoundScreen from '../../pages/not-found-screen/not-found-screen';
+import Offer from '../../pages/offer/offer';
+import {AppRoute, AuthorizationStatus} from '../../const';
 import PrivateRoute from '../private-route/private-route';
-import { AppRoute, AuthStatus } from '../../const';
+import { Offers } from '../../types/offer';
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Main from '../../pages/main/main';
 
-type AppScreenProps = {
-  placesCount: number;
+type AppProps = {
+  offersCount: number;
+  offers: Offers;
 }
 
-function App({placesCount}: AppScreenProps): JSX.Element {
+function App({offersCount, offers}: AppProps): JSX.Element {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path={AppRoute.Root} element={<MainScreen placesCount={placesCount} />} />
-        <Route path={AppRoute.Login} element={<LoginScreen />} />
+        <Route
+          index
+          element={
+            <Main
+              offersCount={offersCount}
+              offers={offers}
+            />
+          }
+        />
         <Route
           path={AppRoute.Favorites}
           element={
-            <PrivateRoute authStatus={AuthStatus.NoAuth}>
-              <FavoritesScreen />
+            <PrivateRoute authorizationStatus={AuthorizationStatus.Auth}>
+              <Favorites offers={offers} />
             </PrivateRoute>
           }
         />
-        <Route path={AppRoute.Offer} element={<OfferScreen/>} />
-        <Route path={AppRoute.Other} element={<PageNotFoundScreen />} />
+        <Route
+          path={AppRoute.Login}
+          element={<Login />}
+        />
+        <Route path={AppRoute.Offer}>
+          <Route
+            path=':id'
+            element={<Offer offers={offers} />}
+          />
+        </Route>
+        <Route
+          path='*'
+          element={<NotFoundScreen />}
+        />
       </Routes>
     </BrowserRouter>
   );
