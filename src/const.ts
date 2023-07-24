@@ -1,17 +1,15 @@
-export const Setting = {
-  PlacesCount: 5
-};
-
-export enum AppRoute {
-  Root = '/',
-  Login = '/login',
-  Favorites = '/favorites',
-  Offer = '/offer/:ids',
-  Other = '*'
+export const enum Settings {
+  offers = 500
 }
 
-export enum AuthStatus {
+export const enum AppRoute {
+  Login = '/login',
+  Favorites = '/favorites',
+  Offer = '/offer/'
+}
+
+export const enum AuthorizationStatus {
   Auth = 'AUTH',
-  NoAuth = 'NOAUTH',
-  Unknown = 'UNKNOWN'
+  NoAuth = 'NO_AUTH',
+  Unknown = 'UNKNOWN',
 }
