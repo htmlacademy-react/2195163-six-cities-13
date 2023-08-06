@@ -43,7 +43,7 @@ function Favorites({offers}: FavoritesProps): JSX.Element {
             <h1 className="favorites__title">Saved listing</h1>
             <OfferList
               offers={offers}
-              onListItemHover={() => ''}
+              onListItemHover={() => ''} type={'cities'}
             />
           </section>
         </div>
