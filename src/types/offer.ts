@@ -1,49 +1,26 @@
-export type Offer = {
+import { Location , City } from './offers-list';
+
+export type SingleOffer = {
   id: string;
   title: string;
   type: string;
   price: number;
-  previewImage: string;
   city: City;
   location: Location;
   isFavorite: boolean;
   isPremium: boolean;
   rating: number;
-}
-
-export type City = {
-  name: string;
-  location: Location;
-}
-
-export type Location = {
-  latitude: number;
-  longitude: number;
-  zoom: number;
-}
-
-export type Host = {
-  isPro: boolean;
-  name: string;
-  avatarUrl: string;
-}
-
-export type DetailedOffer = {
-  id: string;
-  title: string;
   description: string;
-  type: string;
-  price: number;
-  images: string[];
-  city: City;
-  location: Location;
+  bedrooms: number;
   goods: string[];
   host: Host;
-  isPremium: boolean;
-  isFavorite: boolean;
-  rating: number;
-  bedrooms: number;
+  images: string[];
   maxAdults: number;
-}
 
-export type Offers = Offer[];
+};
+
+export type Host = {
+  name: string;
+  avatarUrl: string;
+  isPro: boolean;
+}

@@ -1,23 +1,35 @@
-import { Routes, Route } from 'react-router-dom';
-import Favorites from '../../pages/favorites/favorites';
-import Login from '../../pages/login/login';
-import NotFoundScreen from '../../pages/not-found-screen/not-found-screen';
-import Offer from '../../pages/offer/offer';
+import { Route, Routes } from 'react-router-dom';
 import { AppRoute } from '../../const';
-import { useAppSelector } from '../../hooks';
+import MainScreen from '../../pages/main-screen/main-screen';
+import FavoritesScreen from '../../pages/favorites-screen/favorites-screen';
+import LoginScreen from '../../pages/login-screen/login-screen';
+import NotFoundScreen from '../../pages/not-found-screen/not-found-screen';
+import OfferScreen from '../../pages/offer-screen/offer-screen';
 import PrivateRoute from '../private-route/private-route';
-import Main from '../../pages/main/main';
-import LoadingScreen from '../../pages/loading-screen.tsx/loading-screen';
-import HistoryRouter from '../history-router/history-router';
+import { useAppSelector } from '../../hooks';
+import LoadingScreen from '../../pages/loading-screen/loading-screen';
+import HistoryRouter from '../history-route/history-router';
 import browserHistory from '../../browser-history';
+import { getAuthCheckedStatus, getAuthStatus } from '../../store/user-process/user-process.selectors';
+import { getErrorStatus, getLoadingStatus } from '../../store/offers-data/offers-data.selectors';
+import ErrorScreen from '../../pages/error-screen/error-screen';
+
 
 function App(): JSX.Element {
-  const isOffersDataLoading = useAppSelector((state) => state.isOffersDataLoading);
-  const isAuthorizationStatus = useAppSelector((state) => state.authorizationStatus);
+  const authorizationStatus = useAppSelector(getAuthStatus);
+  const isAuthChecked = useAppSelector(getAuthCheckedStatus);
+  const isDataLoading = useAppSelector(getLoadingStatus);
+  const hasError = useAppSelector(getErrorStatus);
 
-  if (isOffersDataLoading) {
+  if (!isAuthChecked || isDataLoading) {
     return (
       <LoadingScreen />
+    );
+  }
+
+  if(hasError) {
+    return (
+      <ErrorScreen />
     );
   }
 
@@ -25,35 +37,22 @@ function App(): JSX.Element {
     <HistoryRouter history={browserHistory}>
       <Routes>
         <Route
-          index
+          path={AppRoute.Root}
           element={
-            <Main />
+            <MainScreen />
           }
         />
         <Route
           path={AppRoute.Favorites}
           element={
-            <PrivateRoute authorizationStatus={isAuthorizationStatus}>
-              <Favorites />
+            <PrivateRoute authStatus={authorizationStatus}>
+              <FavoritesScreen />
             </PrivateRoute>
           }
         />
-        <Route
-          path={AppRoute.Login}
-          element={<Login />}
-        />
-        <Route path={AppRoute.Offer}>
-          <Route
-            path=':id'
-            element={
-              <Offer />
-            }
-          />
-        </Route>
-        <Route
-          path='*'
-          element={<NotFoundScreen />}
-        />
+        <Route path={AppRoute.Login} element={<LoginScreen />} />
+        <Route path={`${AppRoute.Offer}/:id`} element={<OfferScreen/>} />
+        <Route path="*" element={<NotFoundScreen />} />
       </Routes>
     </HistoryRouter>
   );
