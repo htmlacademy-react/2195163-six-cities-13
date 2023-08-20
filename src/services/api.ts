@@ -1,7 +1,10 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import { StatusCodes } from 'http-status-codes';
+import axios, {AxiosInstance , AxiosRequestConfig, AxiosResponse, AxiosError} from 'axios';
 import { getToken } from './token';
+import { StatusCodes } from 'http-status-codes';
+import { BACKEND_URL } from '../const';
 import { toast } from 'react-toastify';
+
+const REQUEST_TIMEOUT = 5000;
 
 type DetailMessageType = {
   type: string;
@@ -11,18 +14,15 @@ type DetailMessageType = {
 const StatusCodeMapping: Record<number, boolean> = {
   [StatusCodes.BAD_REQUEST]: true,
   [StatusCodes.UNAUTHORIZED]: true,
-  [StatusCodes.NOT_FOUND]: true,
+  [StatusCodes.NOT_FOUND]: true
 };
 
 const shouldDisplayError = (response: AxiosResponse) => !!StatusCodeMapping[response.status];
 
-const BACKEND_URL = 'https://13.design.pages.academy/six-cities';
-const REQUEST_TIMEOUT = 5000;
-
 export const createAPI = (): AxiosInstance => {
   const api = axios.create({
     baseURL: BACKEND_URL,
-    timeout: REQUEST_TIMEOUT
+    timeout: REQUEST_TIMEOUT,
   });
 
   api.interceptors.request.use(
@@ -43,7 +43,6 @@ export const createAPI = (): AxiosInstance => {
       if (error.response && shouldDisplayError(error.response)) {
         const detailMessage = (error.response.data);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         toast.warn(detailMessage.message);
       }
 
