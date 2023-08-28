@@ -42,7 +42,6 @@ export const Map: FC<MapProps> = ({
       : {height: '100%'};
 
   if(nearbyOffers !== undefined){
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const selectedOffer = offers.find((offer) => offer.id === selectedOfferId)!;
     nearbyOffers = [...nearbyOffers, selectedOffer];
   }
