@@ -1,27 +1,29 @@
-import { render } from '@testing-library/react';
-import useMap from './use-map';
+import {screen, render} from '@testing-library/react';
+import {useMap} from './use-map.ts';
+import {MutableRefObject} from 'react';
+import {generateMockOffer} from '../mocks/generate-mock-offer.ts';
+import {Offer} from '../store/offers-process/offers-process.slice.ts';
 
+describe('Hook: useMap', () => {
+  const mockOffer = generateMockOffer(false) as Offer;
 
-describe('useMap', () => {
   it('returns a Map instance when called', () => {
-    const mapRef = { current: document.createElement('div') } as React.MutableRefObject<HTMLElement | null>;
-    const city = {
-      name: 'test',
-      location: {
-        latitude: 0,
-        longitude: 0,
-        zoom: 10,
-      },
+    const expectedResult = 'works correct';
+    const mapRef = {
+      current: document.createElement('div'),
+    } as MutableRefObject<HTMLElement | null>;
+
+    const MockRefComponent = () => {
+      const city = mockOffer.city;
+      const map = useMap({mapRef, city});
+      return (
+        <div data-testid="map-element">{map ? 'works correct' : 'works incorrect'}</div>
+      );
     };
 
-    const TestComponent = () => {
-      const map = useMap(mapRef, city);
-      return <div data-testid="map">{map ? 'Map is ready' : 'Map is not ready'}</div>;
-    };
+    render(<MockRefComponent />);
+    const mapElement = screen.getByTestId('map-element');
 
-    const { getByTestId } = render(<TestComponent />);
-    const mapElement = getByTestId('map');
-
-    expect(mapElement.textContent).toBe('Map is ready');
+    expect(mapElement.textContent).toBe(expectedResult);
   });
 });

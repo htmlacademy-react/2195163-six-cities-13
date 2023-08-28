@@ -1,38 +1,36 @@
-import { CityName, SortingOption } from '../../const';
-import { useAppDispatch, useAppSelector } from '../../hooks';
-import { getCityName } from '../../store/offers-data/offers-data.selectors';
-import { cityNameChange, sortOffers, sortOffersByCity } from '../../store/offers-data/offers-data.slice';
-import React, { useCallback } from 'react';
-import cn from 'classnames';
-import style from './cities-list.module.css';
+import {CITIES} from '../../const.ts';
+import {Link} from 'react-router-dom';
+import {useAppSelector} from '../../hooks/use-app-selector.ts';
+import {useAppDispatch} from '../../hooks/use-app-dispatch.ts';
+import {memo} from 'react';
+import {getOffersCity} from '../../store/offers-process/offers-process.selectors.ts';
+import {changeOffersCity, City} from '../../store/offers-process/offers-process.slice.ts';
 
-function CitiesList() {
-  const selectedCityName = useAppSelector(getCityName);
+const CitiesList = () => {
+  const activeCity = useAppSelector(getOffersCity);
   const dispatch = useAppDispatch();
-
-  const handleCityNameClick = useCallback((cityName : string) => () => {
-    dispatch(sortOffersByCity(cityName));
-    dispatch(cityNameChange(cityName));
-    dispatch(sortOffers(SortingOption.Popular));
-  },[dispatch]);
+  const handleCityClick = (nextCityName: City) => dispatch(changeOffersCity(nextCityName));
 
   return (
-    <section className="locations container">
-      <ul className="locations__list tabs__list">
-        {Object.values(CityName).map((elem) => (
-          <li key={`${elem}-city`} className="locations__item">
-            <button
-              className={cn(`locations__item-link tabs__item ${style.button__city}`,
-                {'tabs__item--active': selectedCityName === elem})}
-              onClick={handleCityNameClick(elem)}
+    <ul
+      className="locations__list tabs__list"
+      data-testid="cities-list-element"
+    >
+      {CITIES.map((city) =>
+        (
+          <li className="locations__item" key={city}>
+            <Link
+              className={`locations__item-link tabs__item ${activeCity === city ? 'tabs__item--active' : ''}`}
+              onClick={() => handleCityClick(city)}
+              to="#"
             >
-              <span>{elem}</span>
-            </button>
+              <span>{city}</span>
+            </Link>
           </li>
-        ))}
-      </ul>
-    </section>
+        )
+      )}
+    </ul>
   );
-}
+};
 
-export const MemoizedCitiesList = React.memo(CitiesList);
+export const MemoizedCitiesList = memo(CitiesList);

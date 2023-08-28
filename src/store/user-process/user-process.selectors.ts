@@ -1,6 +1,7 @@
-import { NameSpace } from '../../const';
-import { State } from '../../types/state';
-import { AuthStatus } from '../../const';
+import {AuthorizationStatus, UserInfo} from './user-process.slice.ts';
+import {NameSpace} from '../../const.ts';
+import {State} from '../../hooks/use-app-selector.ts';
 
-export const getAuthStatus = (state: State): AuthStatus => state[NameSpace.User].authorizationStatus;
-export const getAuthCheckedStatus = (state: State): boolean => state[NameSpace.User].authorizationStatus !== AuthStatus.Unknown;
+export const getAuthStatus = (state: Pick<State, typeof NameSpace.User>): AuthorizationStatus => state[NameSpace.User].authStatus;
+
+export const getUserInfo = (state: Pick<State, typeof NameSpace.User>): UserInfo => state[NameSpace.User].userInfo;

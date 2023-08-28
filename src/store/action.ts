@@ -1,4 +1,5 @@
-import { createAction } from '@reduxjs/toolkit';
-import { AppRoute } from '../const';
+import {createAction} from '@reduxjs/toolkit';
 
-export const redirectToRoute = createAction<AppRoute>('offers/redirectToRoute');
+export const redirectToRoute = createAction('app/redirectToRoute',
+  (route: string) => ({payload: route})
+);
