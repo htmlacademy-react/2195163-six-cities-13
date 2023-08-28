@@ -1,63 +1,77 @@
-import { useRef, useEffect } from 'react';
-import { Icon, Marker, layerGroup } from 'leaflet';
-import { TOffersList} from '../../types/offers-list';
-import { TSingleOffer } from '../../types/offer';
-import { URL_MARKER_DEFAULT, URL_MARKER_CURRENT } from '../../const';
-import useMap from '../../hooks/use-map';
+import leaflet, {layerGroup, Marker} from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import style from './map.module.css';
+import {CityLocation, Offer} from '../../store/offers-process/offers-process.slice.ts';
+import {FC, useEffect, useRef} from 'react';
+import {UrlMarkers} from '../../const.ts';
+import {useMap} from '../../hooks/use-map.ts';
 
-type TMapProps = {
-  offers: TOffersList[] | TSingleOffer[];
-  selectedPoint: TOffersList | undefined;
-};
+type MapProps = {
+  offers: Offer[];
+  nearbyOffers?: Offer[];
+  city: CityLocation;
+  selectedOfferId: string | undefined;
+  isOfferPage: boolean;
+}
 
-const defaultCustomIcon = new Icon({
-  iconUrl: URL_MARKER_DEFAULT,
-  iconSize: [29, 39],
-  iconAnchor: [20, 40],
-});
-
-const currentCustomIcon = new Icon({
-  iconUrl: URL_MARKER_CURRENT,
-  iconSize: [29, 39],
-  iconAnchor: [20, 40]
-});
-
-function Map ({offers ,selectedPoint}: TMapProps) : JSX.Element {
+export const Map: FC<MapProps> = ({
+  offers,
+  nearbyOffers = undefined,
+  city,
+  selectedOfferId,
+  isOfferPage
+}) => {
   const mapRef = useRef(null);
-  const map = useMap(mapRef, offers[0].city);
+  const map = useMap({mapRef, city});
+  const {latitude: cityLatitude, longitude: cityLongitude, zoom} = city.location;
+
+  const defaultCustomIcon = leaflet.icon({
+    iconUrl: UrlMarkers.Default,
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+  });
+
+  const currentCustomIcon = leaflet.icon({
+    iconUrl: UrlMarkers.Current,
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+  });
+
+  const getMapStyle = () =>
+    isOfferPage
+      ? {height: '100%', width: '1150px', margin: '0 auto'}
+      : {height: '100%'};
+
+  if(nearbyOffers !== undefined){
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const selectedOffer = offers.find((offer) => offer.id === selectedOfferId)!;
+    nearbyOffers = [...nearbyOffers, selectedOffer];
+  }
+
   useEffect(() => {
     if (map) {
-      const markerLayer = layerGroup().addTo(map);
-      offers.forEach((offer) => {
+      map.flyTo([cityLatitude, cityLongitude], zoom);
+      const placeLayer = layerGroup().addTo(map);
+      (nearbyOffers ?? offers).forEach((offer) => {
         const marker = new Marker({
           lat: offer.location.latitude,
           lng: offer.location.longitude,
         });
 
-        marker.setIcon(
-          selectedPoint !== undefined && offer.id === selectedPoint.id
+        marker
+          .setIcon(selectedOfferId === offer.id
             ? currentCustomIcon
-            : defaultCustomIcon
-        )
-          .addTo(markerLayer);
+            : defaultCustomIcon,
+          )
+          .addTo(placeLayer);
       });
-      map.flyTo([
-        offers[0].city.location.latitude,
-        offers[0].city.location.longitude,
-      ],
-      offers[0].city.location.zoom
-      );
-
       return () => {
-        map.removeLayer(markerLayer);
+        map.removeLayer(placeLayer);
       };
     }
-  }, [map, selectedPoint, offers]);
+  }, [map, offers, selectedOfferId, currentCustomIcon, defaultCustomIcon, cityLongitude, cityLatitude, zoom, nearbyOffers]);
 
-  return <div className={style.map_iframe} ref={mapRef}></div>;
-
-}
-
-export default Map;
+  return (
+    <div style={getMapStyle()} ref={mapRef} data-testid="map-element">
+    </div>
+  );
+};

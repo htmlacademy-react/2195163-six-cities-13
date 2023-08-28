@@ -1,89 +1,78 @@
-import { Link, useLocation } from 'react-router-dom';
-import { AppRoute, AuthStatus } from '../../const';
-import { useAppDispatch, useAppSelector } from '../../hooks';
-import { logoutAction } from '../../store/user-process/user-process.action';
-import { getAuthStatus } from '../../store/user-process/user-process.selectors';
-import { getFavorites , getCityName } from '../../store/offers-data/offers-data.selectors';
-import { useCallback } from 'react';
-import styles from './header.module.css';
-import { sortOffersByCity } from '../../store/offers-data/offers-data.slice';
-import { getUsername } from '../../services/token';
+import {Link} from 'react-router-dom';
+import {Authorization, Paths} from '../../const.ts';
+import {useAppSelector} from '../../hooks/use-app-selector.ts';
+import {useAppDispatch} from '../../hooks/use-app-dispatch.ts';
+import {logoutAction} from '../../service/api-actions.ts';
+import {memo, SyntheticEvent} from 'react';
+import {getAuthStatus, getUserInfo} from '../../store/user-process/user-process.selectors.ts';
+import {getFavoriteOffers} from '../../store/offers-process/offers-process.selectors.ts';
 
-
-function Header(): JSX.Element {
-  const userStatus = useAppSelector(getAuthStatus);
+const Header = () =>{
+  const authStatus = useAppSelector(getAuthStatus);
+  const {email, avatarUrl} = useAppSelector(getUserInfo);
+  const favoriteOffers = useAppSelector(getFavoriteOffers);
   const dispatch = useAppDispatch();
-  const favList = useAppSelector(getFavorites);
-  const currentCityName = useAppSelector(getCityName);
-  const isLoggedIn = userStatus === AuthStatus.Auth;
 
-  const location = useLocation().pathname;
+  const signOutButtonHandler = (evt: SyntheticEvent<HTMLAnchorElement>) => {
+    evt.preventDefault();
+    dispatch(logoutAction());
+  };
 
-
-  const email = getUsername();
-
-  const handleHeaderClick = useCallback(() => {
-    dispatch(sortOffersByCity(currentCityName));
-  },[dispatch , currentCityName]);
-
-  const handleLogoutClick = useCallback(() => {
-    if(isLoggedIn) {
-      dispatch(logoutAction());
-    }
-
-  },[dispatch , isLoggedIn]);
-
-  return (
+  return(
     <header className="header">
       <div className="container">
         <div className="header__wrapper">
           <div className="header__left">
-            <Link
-              className="header__logo-link"
-              to={AppRoute.Root}
-              onClick={handleHeaderClick}
-            >
+            <Link className="header__logo-link" to={Paths.Main}>
               <img
-                className={`header__logo ${styles.header__logo}`}
-                src="img/logo.svg"
+                className="header__logo"
+                src="markup/img/logo.svg"
                 alt="6 cities logo"
+                width="81"
+                height="41"
+                data-testid="logo-element"
               />
             </Link>
           </div>
           <nav className="header__nav">
-
-            {isLoggedIn ?
-              <ul className="header__nav-list">
-                <li className="header__nav-item user">
-                  <Link className="header__nav-link header__nav-link--profile" to={AppRoute.Favorites}>
-                    <div className="header__avatar-wrapper user__avatar-wrapper">
-                    </div>
-                    <span className="header__user-name user__name">{email}</span>
-                    <span className="header__favorite-count">{favList.length}</span>
-                  </Link>
-                </li>
-                <li className="header__nav-item">
-                  <Link onClick={handleLogoutClick} className="header__nav-link" to={location}>
-                    <span className="header__signout">Sign out</span>
-                  </Link>
-                </li>
-              </ul>
-              :
-              <ul className="header__nav-list">
-                <li className="header__nav-item user">
-                  <Link className="header__nav-link header__nav-link--profile" to={AppRoute.Login}>
-                    <div className="header__avatar-wrapper user__avatar-wrapper">
-                    </div>
-                    <span className="header__login">Sign in</span>
-                  </Link>
-                </li>
-              </ul>}
-
+            <ul className="header__nav-list">
+              { authStatus === Authorization.Auth
+                ? (
+                  <>
+                    <li className="header__nav-item user">
+                      <Link
+                        className="header__nav-link header__nav-link--profile"
+                        to={Paths.Favorites}
+                      >
+                        <div className="header__avatar-wrapper user__avatar-wrapper">
+                          <img src={avatarUrl} alt="avatar" style={{borderRadius: '50%'}}/>
+                        </div>
+                        <span className="header__user-name user__name">{email}</span>
+                        <span className="header__favorite-count">{favoriteOffers.length}</span>
+                      </Link>
+                    </li>
+                    <li className="header__nav-item">
+                      <Link onClick={signOutButtonHandler} className="header__nav-link" to={Paths.Main}>
+                        <span className="header__signout">Sign out</span>
+                      </Link>
+                    </li>
+                  </>
+                )
+                : (
+                  <li className="header__nav-item user">
+                    <Link to={Paths.Login} className="header__nav-link header__nav-link--profile">
+                      <div className="header__avatar-wrapper user__avatar-wrapper">
+                      </div>
+                      <span className="header__login">Sign in</span>
+                    </Link>
+                  </li>
+                )}
+            </ul>
           </nav>
         </div>
       </div>
     </header>
   );
-}
+};
 
-export default Header;
+export const MemoizedHeader = memo(Header);
